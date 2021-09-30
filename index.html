@@ -59,10 +59,15 @@ async function sync() {
 setInterval(async () => { await sync(); }, 1000);
 
 // https://stackoverflow.com/a/36168767/3628322
-document.getElementById('main').addEventListener('keydown', async (e) => {
-	if(e.keyCode == 9) {
-		document.execCommand('insertHTML', false, '&#9;');
+
+document.getElementById('main').addEventListener('keydown', function (e) {
+	if (e.keyCode === 9) {
+		let val = this.value, start = this.selectionStart, end = this.selectionEnd;
+		this.value = val.substring(0, start) + '\t' + val.substring(end);
+		this.selectionStart = this.selectionEnd = start + 1;
+		e.stopPropagation();
 		e.preventDefault();
+		return false;
 	}
 });
 
