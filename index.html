@@ -20,15 +20,19 @@ body {
 #main {
 	width: 100%;
 	height: 100%;
+	margin: 0;
 	padding: 1em;
+	border: none;
 	font-family: monospace;
 	box-sizing: border-box;
 	white-space: pre;
+	color: inherit;
+	background-color: transparent;
 }
 </style>
 </head>
 <body>
-<div id=main contenteditable="true"></div>
+<textarea id=main></textarea>
 <script>
 var d = {
 	version: 0,
@@ -36,34 +40,23 @@ var d = {
 };
 
 async function sync() {
-	let div = document.getElementById('main');
-	let content = div.innerHTML;
-	let dd = d;
-	if (content != dd.content ) {
-		dd.version = Math.floor(Date.now() / 1000);
-		dd.content = content;
+	let ta = document.getElementById('main');
+	let content = ta.value;
+	if (content != d.content ) {
+		d.version = Math.floor(Date.now() / 1000);
+		d.content = content;
 	}
-	let dp = await fetch('/v1/sync', {
+	let dp = await fetch('', {
 		method: 'POST',
 		body: JSON.stringify(d)
 	});
 	if (dp.status == 409) {
-		let dj = await dp.json();
-		d = dj;
-		div.innerHTML = d.content;
-		return;
-	} else if (dp.status == 204) {
-		d.content = dd.content;
-		return;
-	} else {
-		alert(dp.statusText);
-		return;
+		d = await dp.json();
+		ta.value = d.content;
 	}
 }
 
-setInterval(async () => {
-	await sync();
-}, 1000);
+setInterval(async () => { await sync(); }, 1000);
 
 // https://stackoverflow.com/a/36168767/3628322
 document.getElementById('main').addEventListener('keydown', async (e) => {
